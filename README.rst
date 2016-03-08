@@ -1,5 +1,5 @@
 ======
-pysolr
+aiosolr
 ======
 
 ``aiosolr`` is a asyncio compatible fork of the `pysolr <https://github.com/django-haystack/pysolr>`_ lightweight Python wrapper for `Apache Solr`_. It provides an
