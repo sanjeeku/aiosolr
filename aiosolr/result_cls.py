@@ -32,15 +32,15 @@ class Results(object):
 
     Other response metadata (debug, highlighting, qtime, etc.) are available
     as attributes. Note that not all response keys may be covered for current
-    version of pysolr. If you're sure that your queries return
+    version of aiosolr. If you're sure that your queries return
     something that is missing you can easily extend ``Results``
-    and provide it as a custom results class to ``pysolr.Solr``.
+    and provide it as a custom results class to ``aiosolr.Solr``.
 
     Example::
 
-        import pysolr
+        import aiosolr
 
-        class CustomResults(pysolr.Results):
+        class CustomResults(aiosolr.Results):
             def __init__(self, decoded):
                  self.some_new_attribute = decoded.get('not_covered_key' None)
                  super(self, CustomResults).__init__(decoded)
