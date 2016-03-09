@@ -7,7 +7,7 @@ solr-app/
 logs/
 env
 env3
-pysolr.egg-info/
+aiosolr.egg-info/
 .tox
 solr*.tgz
 .idea
