@@ -76,7 +76,6 @@ class Solr(object):
             data = bytes_body
 
         try:
-            # TO-DO: Add files in request
             with aiohttp.Timeout(self.timeout, loop=self.loop):
                 resp = yield from self.session.request(
                     method, url, data=data, headers=headers)
@@ -250,10 +249,10 @@ class Solr(object):
         Usage::
 
             # All docs.
-            results = solr.search('*:*')
+            results = yield from solr.search('*:*')
 
             # Search with highlighting.
-            results = solr.search('ponies', **{
+            results = yield from solr.search('ponies', **{
                 'hl': 'true',
                 'hl.fragsize': 10,
             })
@@ -283,7 +282,7 @@ class Solr(object):
 
         Usage::
 
-            similar = solr.more_like_this('id:doc_234', 'text')
+            similar = yield from solr.more_like_this('id:doc_234', 'text')
 
         """
         params = {
@@ -366,7 +365,7 @@ class Solr(object):
 
         Usage::
 
-            solr.add([
+            yield from solr.add([
                 {
                     "id": "doc_1",
                     "title": "A test document",
@@ -412,7 +411,7 @@ class Solr(object):
 
         Usage::
 
-            solr.commit()
+            yield from solr.commit()
 
         """
         if expungeDeletes is not None:
@@ -441,7 +440,7 @@ class Solr(object):
 
         Usage::
 
-            solr.optimize()
+            yield from solr.optimize()
 
         """
         if maxSegments:
@@ -470,8 +469,8 @@ class Solr(object):
 
         Usage::
 
-            solr.delete(id='doc_12')
-            solr.delete(q='*:*')
+            yield from solr.delete(id='doc_12')
+            yield from solr.delete(q='*:*')
 
         """
         if id is None and q is None:
