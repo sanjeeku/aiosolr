@@ -1,0 +1,25 @@
+sudo: false
+language: python
+python:
+    - "3.4"
+    - "3.5"
+
+cache:
+  apt: true
+  pip: true
+  directories:
+      - $HOME/download-cache
+
+addons:
+  apt_packages:
+    - default-jdk
+
+install:
+    - "pip install 'aiohttp>=0.21.2'"
+    - "pip install ."
+
+script:
+    - python run-tests.py
+
+notifications:
+    email: false
