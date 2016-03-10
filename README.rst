@@ -7,6 +7,12 @@ interface that queries the server and returns results based on the query.
 
 .. _`Apache Solr`: http://lucene.apache.org/solr/
 
+Status
+======
+
+.. image:: https://secure.travis-ci.org/TigorC/aiosolr.png
+   :target: https://secure.travis-ci.org/TigorC/aiosolr
+
 Features
 ========
 
