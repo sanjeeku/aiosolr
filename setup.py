@@ -3,7 +3,7 @@ from setuptools import setup
 
 setup(
     name="aiosolr",
-    version="0.1.0",
+    version="0.1.1",
     description="Asyncio lightweight python wrapper for Apache Solr.",
     author='Igor Tokarev',
     author_email='TigorC@gmail.com',

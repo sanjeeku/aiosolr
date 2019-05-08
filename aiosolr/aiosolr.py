@@ -45,8 +45,7 @@ class Solr(object):
             form_data.add_field(file_obj.name, file_obj)
         return form_data
 
-    @asyncio.coroutine
-    def _send_request(self, method, path='', body=None, headers=None, files=None):
+    async def _send_request(self, method, path='', body=None, headers=None, files=None):
         url = self._create_full_url(path)
         method = method.lower()
         log_body = body
@@ -77,7 +76,7 @@ class Solr(object):
 
         try:
             with aiohttp.Timeout(self.timeout, loop=self.loop):
-                resp = yield from self.session.request(
+                resp = await self.session.request(
                     method, url, data=data, headers=headers)
         except aiohttp.errors.ClientTimeoutError as err:
             error_message = "Connection to server '%s' timed out: %s"
@@ -102,14 +101,14 @@ class Solr(object):
             reason = resp.headers.get('reason', None)
             full_response = None
             if reason is None:
-                reason, full_response = yield from extract_error(resp)
+                reason, full_response = await extract_error(resp)
             solr_message = make_error_msg(reason, full_response)
             self.log.error(error_message, resp.status, solr_message,
                            extra={'data': {'headers': resp.headers,
                                            'response': resp.content}})
             raise SolrError(error_message % (resp.status, solr_message))
 
-        content = yield from resp.text()
+        content = await resp.text()
         return utils.force_unicode(content)
 
     async def _select(self, params, search_handler='select'):
