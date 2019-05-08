@@ -93,19 +93,18 @@ def make_error_msg(reason, full_response):
     return msg
 
 
-@asyncio.coroutine
-def extract_error(resp):
+async def extract_error(resp):
     full_response = reason = None
     try:
         # if response is in json format
-        json_data = yield from resp.json()
+        json_data = await resp.json()
         reason = json_data['error']['msg']
     except KeyError:
         # if json response has unexpected structure
         full_response = resp.content
     except ValueError:
         # otherwise we assume it's html
-        response_text = yield from resp.read()
+        response_text = await resp.read()
         reason, full_html = scrape_response(resp.headers, response_text)
         full_response = unescape_html(full_html)
     return reason, full_response

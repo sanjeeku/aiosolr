@@ -172,14 +172,14 @@ class SolrTestCase(BaseAIOTestCase):
             },
         ]
 
-        @asyncio.coroutine
-        def init():
+
+        async def init():
             # Clear it.
-            yield from self.solr.delete(q='*:*')
+            await self.solr.delete(q='*:*')
             # Index our docs. Yes, this leans on functionality we're going to test
             # later & if it's broken, everything will catastrophically fail.
             # Such is life.
-            yield from self.solr.add(self.docs)
+            await self.solr.add(self.docs)
 
         self.loop.run_until_complete(init())
 
@@ -305,14 +305,12 @@ class SolrTestCase(BaseAIOTestCase):
                 if self.headers is None:
                     self.headers = {}
 
-            @asyncio.coroutine
-            def json(self):
-                yield from asyncio.sleep(0.01, loop=self.loop)
+            async def json(self):
+                await asyncio.sleep(0.01, loop=self.loop)
                 return json.loads(self.content)
 
-            @asyncio.coroutine
-            def read(self):
-                yield from asyncio.sleep(0.01, loop=self.loop)
+            async def read(self):
+                await asyncio.sleep(0.01, loop=self.loop)
                 return self.content
 
         # Just the reason.

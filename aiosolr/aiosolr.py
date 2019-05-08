@@ -112,8 +112,7 @@ class Solr(object):
         content = yield from resp.text()
         return utils.force_unicode(content)
 
-    @asyncio.coroutine
-    def _select(self, params, search_handler='select'):
+    async def _select(self, params, search_handler='select'):
         # specify json encoding of results
         params['wt'] = 'json'
         params_encoded = urlencode(params, doseq=True)
@@ -121,7 +120,7 @@ class Solr(object):
         if len(params_encoded) < 1024:
             # Typical case.
             path = '%s/?%s' % (search_handler, params_encoded)
-            response = yield from self._send_request('get', path)
+            response = await self._send_request('get', path)
             return response
         else:
             # Handles very long queries by submitting as a POST.
@@ -129,7 +128,7 @@ class Solr(object):
             headers = {
                 'Content-type': 'application/x-www-form-urlencoded; charset=utf-8',
             }
-            response = yield from self._send_request(
+            response = await self._send_request(
                 'post', path, body=params_encoded, headers=headers)
             return response
 
@@ -175,8 +174,7 @@ class Solr(object):
 
         return doc_elem
 
-    @asyncio.coroutine
-    def _update(self, message, clean_ctrl_chars=True, commit=True, softCommit=False, waitFlush=None, waitSearcher=None, overwrite=None):
+    async def _update(self, message, clean_ctrl_chars=True, commit=True, softCommit=False, waitFlush=None, waitSearcher=None, overwrite=None):
         """
         Posts the given xml message to http://<self.url>/update and
         returns the result.
@@ -214,27 +212,24 @@ class Solr(object):
         if clean_ctrl_chars:
             message = utils.sanitize(message)
 
-        response = yield from self._send_request('post', path, message, {'Content-type': 'text/xml; charset=utf-8'})
+        response = await self._send_request('post', path, message, {'Content-type': 'text/xml; charset=utf-8'})
         return response
 
-    @asyncio.coroutine
-    def _suggest_terms(self, params):
+    async def _suggest_terms(self, params):
         # specify json encoding of results
         params['wt'] = 'json'
         path = 'terms/?%s' % urlencode(params, doseq=True)
-        response = yield from self._send_request('get', path)
+        response = await self._send_request('get', path)
         return response
 
-    @asyncio.coroutine
-    def _mlt(self, params):
+    async def _mlt(self, params):
         # specify json encoding of results
         params['wt'] = 'json'
         path = 'mlt/?%s' % urlencode(params, doseq=True)
-        response = yield from self._send_request('get', path)
+        response = await self._send_request('get', path)
         return response
 
-    @asyncio.coroutine
-    def search(self, q, search_handler='select', **kwargs):
+    async def search(self, q, search_handler='select', **kwargs):
         """
         Performs a search and returns the results.
 
@@ -260,7 +255,7 @@ class Solr(object):
         """
         params = {'q': q}
         params.update(kwargs)
-        response = yield from self._select(params, search_handler)
+        response = await self._select(params, search_handler)
         decoded = self.decoder.decode(response)
 
         self.log.debug(
@@ -270,8 +265,7 @@ class Solr(object):
         )
         return self.results_cls(decoded)
 
-    @asyncio.coroutine
-    def more_like_this(self, q, mltfl, **kwargs):
+    async def more_like_this(self, q, mltfl, **kwargs):
         """
         Finds and returns results similar to the provided query.
 
@@ -290,7 +284,7 @@ class Solr(object):
             'mlt.fl': mltfl,
         }
         params.update(kwargs)
-        response = yield from self._mlt(params)
+        response = await self._mlt(params)
         decoded = self.decoder.decode(response)
 
         self.log.debug(
@@ -300,8 +294,7 @@ class Solr(object):
         )
         return self.results_cls(decoded)
 
-    @asyncio.coroutine
-    def suggest_terms(self, fields, prefix, **kwargs):
+    async def suggest_terms(self, fields, prefix, **kwargs):
         """
         Accepts a list of field names and a prefix
 
@@ -315,7 +308,7 @@ class Solr(object):
             'terms.prefix': prefix,
         }
         params.update(kwargs)
-        response = yield from self._suggest_terms(params)
+        response = await self._suggest_terms(params)
         result = self.decoder.decode(response)
         terms = result.get("terms", {})
         res = {}
@@ -339,8 +332,8 @@ class Solr(object):
         self.log.debug("Found '%d' Term suggestions results.", sum(len(j) for i, j in res.items()))
         return res
 
-    @asyncio.coroutine
-    def add(self, docs, boost=None, fieldUpdates=None, commit=True, softCommit=False, commitWithin=None, waitFlush=None, waitSearcher=None, overwrite=None):
+
+    async def add(self, docs, boost=None, fieldUpdates=None, commit=True, softCommit=False, commitWithin=None, waitFlush=None, waitSearcher=None, overwrite=None):
         """
         Adds or updates documents.
 
@@ -393,11 +386,11 @@ class Solr(object):
 
         end_time = time.time()
         self.log.debug("Built add request of %s docs in %0.2f seconds.", len(message), end_time - start_time)
-        response = yield from self._update(m, commit=commit, softCommit=softCommit, waitFlush=waitFlush, waitSearcher=waitSearcher, overwrite=overwrite)
+        response = await self._update(m, commit=commit, softCommit=softCommit, waitFlush=waitFlush, waitSearcher=waitSearcher, overwrite=overwrite)
         return response
 
-    @asyncio.coroutine
-    def commit(self, softCommit=False, waitFlush=None, waitSearcher=None, expungeDeletes=None):
+
+    async def commit(self, softCommit=False, waitFlush=None, waitSearcher=None, expungeDeletes=None):
         """
         Forces Solr to write the index data to disk.
 
@@ -419,15 +412,15 @@ class Solr(object):
         else:
             msg = '<commit />'
 
-        response = yield from self._update(
+        response = await self._update(
             msg,
             softCommit=softCommit,
             waitFlush=waitFlush,
             waitSearcher=waitSearcher)
         return response
 
-    @asyncio.coroutine
-    def optimize(self, waitFlush=None, waitSearcher=None, maxSegments=None):
+
+    async def optimize(self, waitFlush=None, waitSearcher=None, maxSegments=None):
         """
         Tells Solr to streamline the number of segments used, essentially a
         defragmentation operation.
@@ -448,12 +441,12 @@ class Solr(object):
         else:
             msg = '<optimize />'
 
-        response = yield from self._update(
+        response = await self._update(
             msg, waitFlush=waitFlush, waitSearcher=waitSearcher)
         return response
 
-    @asyncio.coroutine
-    def delete(self, id=None, q=None, commit=True, waitFlush=None, waitSearcher=None):
+
+    async def delete(self, id=None, q=None, commit=True, waitFlush=None, waitSearcher=None):
         """
         Deletes documents.
 
@@ -482,11 +475,11 @@ class Solr(object):
         elif q is not None:
             m = '<delete><query>%s</query></delete>' % q
 
-        response = yield from self._update(m, commit=commit, waitFlush=waitFlush, waitSearcher=waitSearcher)
+        response = await self._update(m, commit=commit, waitFlush=waitFlush, waitSearcher=waitSearcher)
         return response
 
-    @asyncio.coroutine
-    def extract(self, file_obj, extractOnly=True, **kwargs):
+
+    async def extract(self, file_obj, extractOnly=True, **kwargs):
         """
         POSTs a file to the Solr ExtractingRequestHandler so rich content can
         be processed using Apache Tika. See the Solr wiki for details:
@@ -523,7 +516,7 @@ class Solr(object):
         try:
             # We'll provide the file using its true name as Tika may use that
             # as a file type hint:
-            resp = yield from self._send_request(
+            resp = await self._send_request(
                 'post', 'update/extract',
                 body=params,
                 files=[file_obj])
